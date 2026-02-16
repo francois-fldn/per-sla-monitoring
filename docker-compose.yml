@@ -1,0 +1,31 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/logs:/mosquitto/logs
+
+  replayer:
+      build: ./data-replay
+      container_name: data-replay
+      depends_on:
+        - mosquitto
+      environment:
+        - BROKER_ADDRESS=mosquitto
+        - BROKER_PORT=1883
+      restart: on-failure
+  
+  edge_iot_agent:
+      build: ./edge-iot-agent
+      container_name: edge-iot-agent
+      depends_on:
+        - mosquitto
+      environment:
+        - BROKER_ADDRESS=mosquitto
+        - BROKER_PORT=1883
+      restart: on-failure
