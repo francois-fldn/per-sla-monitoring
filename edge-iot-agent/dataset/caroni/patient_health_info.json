@@ -1,0 +1,18 @@
+{
+  "ID": "2", 
+  "gender": "w", 
+  "groupe": "patient", 
+  "MS_type": "RRMS",
+  "ED": "1/1/1998",
+  "EM": "1/1/1998", 
+  "clinical_active": "False", 
+  "radiological_active": "False", 
+  "progressive": "False",
+  "age": "44",
+  "EDSS": "2.5",
+  "orig_MSSS": "1.28",
+  "updated_MSSS": "2.12",
+  "ARMSS": "4.24", 
+  "inf_act_6m": "False", 
+  "inf_act_12m": "False"
+}

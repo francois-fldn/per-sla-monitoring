@@ -18,6 +18,7 @@ services:
       environment:
         - BROKER_ADDRESS=mosquitto
         - BROKER_PORT=1883
+        - PATIENT_USER_NAME=peppapig
       restart: on-failure
   
   edge_iot_agent:

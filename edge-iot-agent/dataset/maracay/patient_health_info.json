@@ -1,0 +1,17 @@
+{
+  "ID": "1",
+  "gender": "m",
+  "MS_type": "SPMS",
+  "ED": "5/1/2013",
+  "EM": "1/1/2009",
+  "clinical_active": "False",
+  "radiological_active": "False",
+  "progressive": "True",
+  "age": "44",
+  "EDSS": "3.5",
+  "orig_MSSS": "4.20",
+  "updated_MSSS": "5.46",
+  "ARMSS": "4.24",
+  "inf_act_6m": "False",
+  "inf_act_12m": "False"
+}

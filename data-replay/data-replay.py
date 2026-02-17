@@ -1,14 +1,13 @@
 import paho.mqtt.client as mqtt
 import time, csv, os, logging
 
+
+
 def on_publish(client, userdata, mid, reason_code, properties):
     print(f"Message {mid} envoyé avec succès !")
 
-broker = "localhost"
-port = 1883
-
 def main():
-    with open('dataset/peppapig/algo1.csv', newline='') as csvfile:
+    with open(f'dataset/{patient}/algo1.csv', newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quotechar='|')
         for row in reader:
             ret= client.publish("sensors/hr/data", row[4])
@@ -36,6 +35,8 @@ if __name__ == "__main__":
         60
     )
     logger.info("Connecté au broker MQTT")
+
+    patient = os.getenv("PATIENT_USER_NAME", "peppapig")
 
     client.loop_start()
     main()
