@@ -7,7 +7,7 @@ def on_publish(client, userdata, mid, reason_code, properties):
     print(f"Message {mid} envoyé avec succès !")
 
 def main():
-    with open(f'dataset/{patient}/algo1.csv', newline='') as csvfile:
+    with open(f'dataset/{patient}/sensor_data.csv', newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quotechar='|')
         for row in reader:
             ret= client.publish("sensors/hr/data", row[4])
