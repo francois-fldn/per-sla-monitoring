@@ -166,16 +166,18 @@ def clean_none_value(value, histo):
   else: return histo[-1]
 
 def clean_value(value, type):
+  try:
+    history[type][0]
+  except:
+    history[type] = list()
+
   new_value = clean_none_value(value, history[type])
   (new_value, old_value) = median_filter(new_value, type, history[type])
   if old_value != None: print(f"Changement de valeur : {old_value} -> {new_value}")
 
   if new_value > 0.0:
-    try: # En temps normal
-      history[type].append(value)
-      if len(history[type]) > MAX_LEN_HISTORY:
-        history[type] = history[type][-MAX_LEN_HISTORY:]
-    except: # Si l'historique de la data existe pas
-      history[type] = [value]
+    history[type].append(value)
+    if len(history[type]) > MAX_LEN_HISTORY:
+      history[type] = history[type][-MAX_LEN_HISTORY:]
 
   return new_value

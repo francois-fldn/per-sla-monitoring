@@ -24,12 +24,12 @@ def main():
     data = float(message.payload.decode('utf-8'))
     metric = message.topic.split('/')[1]
     logger.info(f"Message recu sur le topic {metric} : {data}")
-    cur_json[metric] = data
+    # cur_json[metric] = data
     
 
     # TODO : ajouter partie filtrage ici
-    # cleaned_data = cleaner.clean_value(data, metric)
-    # cur_json[metric] = cleaned_data
+    cleaned_data = cleaner.clean_value(data, metric)
+    cur_json[metric] = cleaned_data
     # TODO : ajouter partie filtrage ici
 
     # annotation des données
