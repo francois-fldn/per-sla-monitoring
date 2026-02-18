@@ -1,12 +1,16 @@
 import numpy as np
 from scipy.signal import medfilt
 
-# TODO : si valeur hr a 0 (ca va arriver) ne pas enregistrer dans l'historique et quand meme traiter l'erreur
-# TODO : envoyer les erreurs sur un topic different
+# FINI: si valeur a 0 (ca va arriver) ne pas enregistrer dans l'historique et quand meme traiter l'erreur
+  # TODO : enregistrer le nombre de valeurs consecutives et si trop important envoyer un signal
+  # TODO : envoyer les erreurs sur un topic different
 # TODO : faire les bornes et thresholds
 
 
 MAX_LEN_HISTORY = 50
+consecutive_none = 0
+consecutive_zeros = 0
+consecutive_outliers = 0
 
 history = dict()
 
@@ -102,16 +106,16 @@ def median_filter(new_data: float, data_type: str, hist: list, return_med_filt =
     #     return (new_data, None)
     
     if len(history) >= 20:
-      arr_full = np.array(history, dtype=float)
-      med_filtered = medfilt(history, kernel_size=5)
+      arr_full= np.array(history, dtype=float)
+      med_filtered= medfilt(history, kernel_size=5)
 
-      threshold = get_dynamic_threshold(history)
+      threshold= get_dynamic_threshold(history)
       # print(f"[INFO] [THRESHOLD] [{data_type}] {threshold}")
 
-      raw_new = arr_full[start_idx:]
-      filtered_new = med_filtered[start_idx:]
+      raw_new= arr_full[start_idx:]
+      filtered_new= med_filtered[start_idx:]
 
-      diff = np.abs(raw_new - filtered_new)
+      diff= np.abs(raw_new - filtered_new)
       outliers_detectes = diff > threshold
 
       outliers = raw_new[outliers_detectes].tolist()
@@ -130,9 +134,9 @@ def median_filter(new_data: float, data_type: str, hist: list, return_med_filt =
     return (new_data, None)
 
 def avg(data: list) -> float:
-  count = len(data) - data.count(None)
+  count= len(data) - data.count(None)
   if count == 0: return None
-  mean = sum(dat for dat in data if dat != None)/count
+  mean= sum(dat for dat in data if dat != None)/count
   return round(mean, 3)
 
 def recur_rmv_none_values(histo):
@@ -155,29 +159,49 @@ def recur_rmv_none_values_opp(histo):
 
 def remove_none_values(histo):
   if histo.count(None) == len(histo): return histo
-  cleaned_data = recur_rmv_none_values(histo)[1]
+  cleaned_data= recur_rmv_none_values(histo)[1]
   if histo[-1] == None:
-    cleaned_data = recur_rmv_none_values_opp(cleaned_data)[1]
+    cleaned_data= recur_rmv_none_values_opp(cleaned_data)[1]
   return cleaned_data
 
 def clean_none_value(value, histo):
-  if value != None: return value
-  elif len(histo) < 1: return 0.0
-  else: return histo[-1]
+  global consecutive_none
+  if value != None: 
+    consecutive_none= 0
+    return value
+  else:
+    consecutive_none+=1
+    if len(histo) < 1: return 0.0
+    else: return histo[-1]
+
+def clean_zero_value(value, histo):
+  global consecutive_zeros
+  if value > 0.0: 
+    consecutive_zeros= 0
+    return value
+  else : 
+    consecutive_zeros+= 1
+    if len(histo) < 1: return 0.0
+    else: return histo[-1]
 
 def clean_value(value, type):
+  global consecutive_outliers
   try:
     history[type][0]
   except:
-    history[type] = list()
+    history[type]= list()
 
-  new_value = clean_none_value(value, history[type])
-  (new_value, old_value) = median_filter(new_value, type, history[type])
-  if old_value != None: print(f"Changement de valeur : {old_value} -> {new_value}")
+  new_value= clean_none_value(value, history[type])
+  new_value= clean_zero_value(new_value, history[type])
+  (new_value, old_value)= median_filter(new_value, type, history[type])
+  if old_value != None: 
+    consecutive_outliers+=1
+    print(f"Changement de valeur : {old_value} -> {new_value}")
+  else: consecutive_outliers=0
 
   if new_value > 0.0:
-    history[type].append(value)
+    history[type].append(new_value)
     if len(history[type]) > MAX_LEN_HISTORY:
-      history[type] = history[type][-MAX_LEN_HISTORY:]
+      history[type]= history[type][-MAX_LEN_HISTORY:]
 
   return new_value
