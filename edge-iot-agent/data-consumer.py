@@ -48,7 +48,7 @@ def main():
       logger.info(f"Data finale: {cur_json}")
       final_json = json_formatter.convert_json(cur_json)
 
-      topic = f"patient.{PATIENT_ID}.data"
+      topic = f"patient.{PATIENT_ID}.raw_data"
       
       # print(final_json)
       producer.produce(topic, final_json, f"")

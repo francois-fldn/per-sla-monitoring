@@ -8,8 +8,8 @@ DATA_COUNT = 3
 DATA_TYPES = ("spO2", "hr", "activity")
 
 REDPANDA_BROKER = os.getenv("RP_BROKER", "localhost:9092")
-TOPIC_SUBSCRIBE = "patient.3.data"
-TOPIC_PUBLISH = "patient.3.ai"
+TOPIC_SUBSCRIBE = "patient.2.raw_data"
+TOPIC_PUBLISH = "patient.2.final_data"
 FEATURES = [
     "month", "age", "gender", "onset_to_baseline_m", "hr", 
     "spO2", "activity", "bmi", "fvc", "is_fast", "lag_alsfrs", "delta_month"
@@ -30,6 +30,8 @@ def main(consumer, producer, model):
         result = dict()
         score = float(prediction)
         result["alsfrs_r"] = score if score <= 40.0 else 40.0
+        for i in DATA_TYPES:
+          result[i] = payload[i]
 
         producer.produce(TOPIC_PUBLISH, value=json.dumps(result).encode('utf-8'))
         producer.flush()
