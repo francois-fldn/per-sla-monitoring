@@ -1,0 +1,31 @@
+{
+  "created_utc": "2026-02-19T09:16:23.991720Z",
+  "task": "One-step-ahead ALSFRS-R regression",
+  "target": "alsfrs_r",
+  "features": [
+    "month",
+    "age",
+    "gender",
+    "onset_to_baseline_m",
+    "hr",
+    "spO2",
+    "activity",
+    "bmi",
+    "fvc",
+    "is_fast",
+    "lag_alsfrs",
+    "delta_month"
+  ],
+  "group_split": "GroupShuffleSplit by patient_id (80/20)",
+  "selected_model": "LinearRegression",
+  "test_metrics": {
+    "model": "LinearRegression",
+    "MAE": 0.9819339200244763,
+    "RMSE": 1.2149691935237892,
+    "R2": 0.9735457200961801
+  },
+  "notes": [
+    "Synthetic dataset, intended for education / prototyping only.",
+    "For real data: add missing-value handling, time-aware validation, and external test sets."
+  ]
+}

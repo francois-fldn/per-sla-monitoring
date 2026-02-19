@@ -1,17 +1,12 @@
 {
   "ID": "1",
   "gender": 0,
-  "MS_type": "SPMS",
-  "ED": "5/1/2013",
-  "EM": "1/1/2009",
-  "clinical_active": "False",
-  "radiological_active": "False",
-  "progressive": "True",
   "age": 44,
-  "EDSS": "3.5",
-  "orig_MSSS": "4.20",
-  "updated_MSSS": "5.46",
-  "ARMSS": "4.24",
-  "inf_act_6m": "False",
-  "inf_act_12m": "False"
+  "onset_to_baseline_m": 9,
+  "bmi": 22.4,
+  "fvc": 78.0,
+  "is_fast": 0,
+  "lag_alsfrs": 36,
+  "delta_month": 1,
+  "month": 6
 }
