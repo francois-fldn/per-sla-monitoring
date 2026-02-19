@@ -1,0 +1,7 @@
+paho-mqtt
+confluent-kafka
+numpy
+scipy
+joblib
+pandas
+scikit-learn==1.6.1

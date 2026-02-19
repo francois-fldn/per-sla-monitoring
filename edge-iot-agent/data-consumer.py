@@ -37,6 +37,14 @@ def main():
     if cnt == DATA_COUNT:
       cur_json["age"] = health_data["age"]
       cur_json["gender"] = health_data["gender"]
+      cur_json["onset_to_baseline_m"] = health_data["onset_to_baseline_m"]
+      cur_json["bmi"] = health_data["bmi"]
+      cur_json["fvc"] = health_data["fvc"]
+      cur_json["is_fast"] = health_data["is_fast"]
+      cur_json["lag_alsfrs"] = health_data["lag_alsfrs"]
+      cur_json["delta_month"] = health_data["delta_month"]
+      cur_json["month"] = health_data["month"]
+
       logger.info(f"Data finale: {cur_json}")
       final_json = json_formatter.convert_json(cur_json)
 
