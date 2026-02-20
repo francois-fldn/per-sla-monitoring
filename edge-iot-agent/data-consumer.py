@@ -7,6 +7,8 @@ import logging, os, json, time
 DATA_COUNT = 3
 DATA_TYPES = ("spO2", "hr", "activity")
 
+PATIENT_HEALTH_INFO = ("age", "gender", "onset_to_baseline_m", "bmi", "fvc", "is_fast", "lag_alsfrs", "delta_month", "month")
+
 MQTT_BROKER_ADDRESS = os.getenv("BROKER_ADDRESS", "localhost")
 MQTT_BROKER_PORT = int(os.getenv("BROKER_PORT", "1883"))
 REDPANDA_BROKER = os.getenv("RP_BROKER","localhost:9092")
@@ -14,11 +16,12 @@ PATIENT = os.getenv("PATIENT_USER_NAME", "peppapig")
 
 def main():
 
-  cur_json = dict()
+  agregated_data = dict()
+  final_json = dict()
   cnt = 0
 
   def on_message(client, userdata, message):
-    nonlocal cur_json, cnt
+    nonlocal agregated_data, final_json, cnt
 
     # aggregation des données
     data = float(message.payload.decode('utf-8'))
@@ -29,24 +32,17 @@ def main():
 
     # TODO : ajouter partie filtrage ici
     cleaned_data = cleaner.clean_value(data, metric)
-    cur_json[metric] = cleaned_data
+    agregated_data[metric] = cleaned_data
     # TODO : ajouter partie filtrage ici
 
     # annotation des données
     cnt += 1
     if cnt == DATA_COUNT:
-      cur_json["age"] = health_data["age"]
-      cur_json["gender"] = health_data["gender"]
-      cur_json["onset_to_baseline_m"] = health_data["onset_to_baseline_m"]
-      cur_json["bmi"] = health_data["bmi"]
-      cur_json["fvc"] = health_data["fvc"]
-      cur_json["is_fast"] = health_data["is_fast"]
-      cur_json["lag_alsfrs"] = health_data["lag_alsfrs"]
-      cur_json["delta_month"] = health_data["delta_month"]
-      cur_json["month"] = health_data["month"]
+      for i in DATA_TYPES: final_json[i]= agregated_data[i]
+      for i in PATIENT_HEALTH_INFO: final_json[i]= health_data[i]
 
-      logger.info(f"Data finale: {cur_json}")
-      final_json = json_formatter.convert_json(cur_json)
+      logger.info(f"Data finale: {final_json}")
+      final_json = json_formatter.convert_json(final_json)
 
       topic = f"patient.{PATIENT_ID}.raw_data"
       
@@ -54,7 +50,8 @@ def main():
       producer.produce(topic, final_json, f"")
       producer.flush()
       logger.info(f"Donnees envoyees sur le topic {topic}")
-      cur_json = dict()
+      agregated_data = dict()
+      final_json = dict()
       cnt = 0
       time.sleep(0.2)
 
