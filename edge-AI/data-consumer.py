@@ -29,9 +29,23 @@ def main(consumer, producer, model):
         prediction = model.predict(input_df)[0]
         result = dict()
         score = float(prediction)
-        result["alsfrs_r"] = score if score <= 40.0 else 40.0
+        
+        result = {
+          "id": "urn:ngsi-ld:HealthRawInformation:patient2",
+          "type": "HealthRawInformation",
+          "@context": ["https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"]
+        }
+
         for i in DATA_TYPES:
-          result[i] = payload[i]
+          result[i] = {
+            "type": "Property",
+            "value": payload[i]
+          }
+
+        result["alsfrs_r"] = {
+          "type": "Property",
+          "value": score if score <= 40.0 else 40.0
+        }
 
         producer.produce(TOPIC_PUBLISH, value=json.dumps(result).encode('utf-8'))
         producer.flush()
