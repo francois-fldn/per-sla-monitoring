@@ -1,1 +1,4 @@
-paho-mqtt==2.1.0
+paho-mqtt
+confluent-kafka
+numpy
+scipy
