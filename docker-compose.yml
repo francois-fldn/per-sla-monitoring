@@ -33,54 +33,11 @@ services:
       interval: 5s
       timeout: 3s
       retries: 60
-
-  # Optional: local Kafka for dev/testing.
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.3
-    container_name: fiware-zookeeper
-    restart: unless-stopped
     environment:
-      ZOOKEEPER_CLIENT_PORT: "2181"
-      ZOOKEEPER_TICK_TIME: "2000"
-    ports:
-      - "2181:2181"
-
-  kafka:
-    image: confluentinc/cp-kafka:7.5.3
-    container_name: fiware-kafka
-    restart: unless-stopped
-    depends_on:
-      - zookeeper
-    ports:
-      - "9092:9092"
-    environment:
-      KAFKA_BROKER_ID: "1"
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092"
-      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
-
-  # Placeholder service: implement Kafka consumer
-  # It should read Kafka messages and call Orion-LD NGSI-LD APIs.
-  kafka-ngsi-bridge:
-    image: node:20-alpine
-    container_name: fiware-kafka-ngsi-bridge
-    restart: unless-stopped
-    depends_on:
-      wait-orion:
-        condition: service_healthy
-      kafka:
-        condition: service_started
-    working_dir: /app
-    volumes:
-      - ./services/kafka-ngsi-bridge:/app
-    environment:
-      KAFKA_BROKERS: "kafka:9092"
-      KAFKA_TOPIC: "ngsi-ld"
-      ORION_LD_BASE_URL: "http://orion-ld:1026"
-      ORION_TIMEOUT_MS: "10000"
-    command: ["sh", "-c", "npm ci && npm run start"]
-    profiles: ["bridge"]
+      FIWARE_SERVICE: "per-sla"
+      FIWARE_SERVICEPATH: "/"
+      # Optional if you need browser-based calls directly to Orion from Node-RED dashboard/etc.
+      # ORIONLD_CORS_ORIGIN: "*"
 
   pepper:
     image: fiware/pep-proxy:8.4.0
@@ -147,5 +104,32 @@ services:
       timeout: 3s
       retries: 1
 
+  grafana:
+    image: grafana/grafana:11.3.1
+    container_name: per-sla-grafana
+    restart: unless-stopped
+    depends_on:
+      ngsi-api:
+        condition: service_started
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: "admin"
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_PATHS_PROVISIONING: /etc/grafana/provisioning
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+
+  grafana-jsonapi:
+    # Acts as a datasource backend for Grafana; it will call ngsi-api/orion
+    image: ghcr.io/grafana/grafana-json-datasource:latest
+    container_name: per-sla-grafana-jsonapi
+    restart: unless-stopped
+    ports:
+      - "3333:3333"
+
 volumes:
   mongo-data:
+  grafana-data:

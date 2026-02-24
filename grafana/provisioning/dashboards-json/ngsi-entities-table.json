@@ -1,0 +1,33 @@
+{
+  "uid": "ngsi-entities",
+  "title": "NGSI-LD Entities (via ngsi-api)",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "timezone": "browser",
+  "panels": [
+    {
+      "type": "table",
+      "title": "Entities",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 10 },
+      "datasource": { "type": "grafana-json-datasource", "uid": "ngsi-api" },
+      "targets": [
+        {
+          "refId": "A",
+          "method": "GET",
+          "urlPath": "/entities",
+          "params": [
+            { "key": "type", "value": "Device" },
+            { "key": "limit", "value": "100" }
+          ]
+        }
+      ],
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": { "source": "id" }
+        }
+      ]
+    }
+  ]
+}
