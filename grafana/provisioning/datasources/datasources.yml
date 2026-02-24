@@ -1,0 +1,11 @@
+apiVersion: 1
+
+datasources:
+  - name: ngsi-api
+    type: grafana-json-datasource
+    access: proxy
+    url: http://grafana-jsonapi:3333
+    isDefault: true
+    jsonData:
+      # Base URL used by queries in the dashboard (relative paths can be used there)
+      baseUrl: http://ngsi-api:3000

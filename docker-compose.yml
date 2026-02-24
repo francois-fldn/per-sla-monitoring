@@ -98,3 +98,138 @@ services:
 
 volumes:
   redpanda-data:
+services:
+  mongo:
+    image: mongo:4.4
+    container_name: fiware-mongo
+    restart: unless-stopped
+    command: ["--bind_ip_all"]
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "mongodb://localhost:27017/admin", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  orion-ld:
+    image: fiware/orion-ld:latest
+    container_name: fiware-orion-ld
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    ports:
+      - "1026:1026"
+    command: >
+      -dbhost mongo
+      -logLevel INFO
+      -forwarding
+      -reqPoolSize 10
+    healthcheck:
+      test: ["CMD-SHELL", "sh -ec '>/dev/tcp/127.0.0.1/1026'"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+    environment:
+      FIWARE_SERVICE: "per-sla"
+      FIWARE_SERVICEPATH: "/"
+      # Optional if you need browser-based calls directly to Orion from Node-RED dashboard/etc.
+      # ORIONLD_CORS_ORIGIN: "*"
+
+  pepper:
+    image: fiware/pep-proxy:8.4.0
+    container_name: fiware-pepper
+    restart: unless-stopped
+    depends_on:
+      wait-orion:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    environment:
+      PEPPER_BROKER_URL: "http://localhost:1026"
+
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: fiware-mongo-express
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: "mongodb://mongo:27017"
+      ME_CONFIG_BASICAUTH: "false"
+
+  ngsi-api:
+    image: node:20-alpine
+    container_name: fiware-ngsi-api
+    restart: unless-stopped
+    depends_on:
+      wait-orion:
+        condition: service_healthy
+    working_dir: /app
+    volumes:
+      - ./cloud-services/ngsi-api:/app
+    environment:
+      PORT: "3000"
+      ORION_LD_BASE_URL: "http://orion-ld:1026"
+      # attribute names expected in your entities (adjust to your model)
+      OWNER_ATTR: "ownerId"
+      TIME_ATTR: "observedAt" # common NGSI-LD temporal attribute name
+      ORION_TIMEOUT_MS: "10000"
+    command: ["sh", "-c", "npm ci && npm run start"]
+    ports:
+      - "3000:3000"
+
+  wait-orion:
+    image: node:20-alpine
+    container_name: fiware-wait-orion
+    depends_on:
+      orion-ld:
+        condition: service_started
+    environment:
+      ORION_LD_BASE_URL: "http://orion-ld:1026"
+    command:
+      [
+        "sh","-ec",
+        "node -e \"const u=process.env.ORION_LD_BASE_URL+'/version';const http=require('http');const https=require('https');const lib=u.startsWith('https')?https:http;let n=0;const tick=()=>{const req=lib.get(u,r=>{if(r.statusCode&&r.statusCode<500){process.exit(0)}else{fail()}});req.on('error',fail);req.setTimeout(2000,()=>{req.destroy(new Error('timeout'))});};const fail=()=>{n++; if(n>120){console.error('Orion not ready'); process.exit(1)}; setTimeout(tick,1000)};tick();\""
+      ]
+    healthcheck:
+      test: ["CMD-SHELL", "exit 0"]
+      interval: 30s
+      timeout: 3s
+      retries: 1
+
+  grafana:
+    image: grafana/grafana:11.3.1
+    container_name: per-sla-grafana
+    restart: unless-stopped
+    depends_on:
+      ngsi-api:
+        condition: service_started
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: "admin"
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_PATHS_PROVISIONING: /etc/grafana/provisioning
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./cloud-grafana/provisioning:/etc/grafana/provisioning:ro
+
+  grafana-jsonapi:
+    # Acts as a datasource backend for Grafana; it will call ngsi-api/orion
+    image: ghcr.io/grafana/grafana-json-datasource:latest
+    container_name: per-sla-grafana-jsonapi
+    restart: unless-stopped
+    ports:
+      - "3333:3333"
+
+volumes:
+  mongo-data:
+  grafana-data:
