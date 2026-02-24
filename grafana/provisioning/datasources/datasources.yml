@@ -2,10 +2,11 @@ apiVersion: 1
 
 datasources:
   - name: ngsi-api
-    type: grafana-json-datasource
+    type: yesoreyeram-infinity-datasource
     access: proxy
-    url: http://grafana-jsonapi:3333
     isDefault: true
     jsonData:
-      # Base URL used by queries in the dashboard (relative paths can be used there)
-      baseUrl: http://ngsi-api:3000
+      allowedHosts:
+        - "ngsi-api:3000"
+      # optional convenience default; panels can still set full URL
+      url: "http://ngsi-api:3000"
