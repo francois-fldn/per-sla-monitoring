@@ -73,7 +73,7 @@ services:
         condition: service_healthy
     working_dir: /app
     volumes:
-      - ./services/ngsi-api:/app
+      - ./cloud-services/ngsi-api:/app
     environment:
       PORT: "3000"
       ORION_LD_BASE_URL: "http://orion-ld:1026"
@@ -120,7 +120,7 @@ services:
       GF_PATHS_PROVISIONING: /etc/grafana/provisioning
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./cloud-grafana/provisioning:/etc/grafana/provisioning:ro
 
   grafana-jsonapi:
     # Acts as a datasource backend for Grafana; it will call ngsi-api/orion
