@@ -11,3 +11,15 @@ datasources:
       base_url: http://ngsi-api:3000
       datasource_mode: "basic"
     editable: true
+  
+  - name: CrateDB
+    uid: "cratedb_grafana"
+    type: postgres
+    access: proxy
+    url: cratedb:5432
+    database: doc
+    user: crate
+    jsonData:
+      sslmode: 'disable'
+      postgresVersion: 903
+    editable: true

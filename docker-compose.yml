@@ -220,8 +220,57 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
+  
+  cratedb:
+    image: crate:5.4
+    container_name: fiware-cratedb
+    restart: unless-stopped
+    ports:
+      - "4200:4200"
+      - "4300:4300"
+      - "5432:5432"
+    command: crate -Ccluster.name=democluster -Chttp.cors.enabled=true -Chttp.cors.allow-origin="*"
+    volumes:
+      - cratedb-data:/data
+
+  quantumleap:
+    image: orchestracities/quantumleap:latest
+    container_name: fiware-quantumleap
+    restart: unless-stopped
+    ports:
+      - "8668:8668"
+    depends_on:
+      - cratedb
+      - orion-ld
+    environment:
+      - CRATE_HOST=cratedb
+      - USE_GEOCODING=false # Mettre à true si vous gérez des coordonnées GPS complexes
+      - LOGLEVEL=INFO
+
+  setup-subscriptions:
+    image: curlimages/curl:latest
+    container_name: fiware-setup-subscriptions
+    restart: "no" # Ne s'exécute qu'une seule fois au démarrage
+    depends_on:
+      wait-orion:
+        condition: service_completed_successfully
+    command: >
+      -s -X POST http://orion-ld:1026/ngsi-ld/v1/subscriptions/
+      -H 'Content-Type: application/json'
+      -d '{
+        "description": "Notify QuantumLeap of all entity changes",
+        "type": "Subscription",
+        "entities": [{"type": "HealthRawInformation"}],
+        "notification": {
+          "endpoint": {
+            "uri": "http://quantumleap:8668/v2/notify",
+            "accept": "application/json"
+          }
+        }
+      }'
 
 volumes:
   redpanda-data:
   mongo-data:
   grafana-data:
+  cratedb-data:

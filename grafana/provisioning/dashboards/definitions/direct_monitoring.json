@@ -69,7 +69,7 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 0,
+        "x": 6,
         "y": 0
       },
       "id": 1,
@@ -119,111 +119,46 @@
     },
     {
       "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "ngsi-api-infinity"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "dark-red",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 30
-              },
-              {
-                "color": "green",
-                "value": 50
-              },
-              {
-                "color": "dark-green",
-                "value": 70
-              },
-              {
-                "color": "green",
-                "value": 90
-              },
-              {
-                "color": "yellow",
-                "value": 110
-              },
-              {
-                "color": "orange",
-                "value": 130
-              },
-              {
-                "color": "dark-red",
-                "value": 150
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 0
-      },
-      "id": 2,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "columns": [],
-          "filters": [],
-          "format": "table",
-          "global_query_id": "",
-          "parser": "uql",
-          "refId": "A",
-          "root_selector": "",
-          "source": "url",
-          "type": "json",
-          "uql": "parse-json\n| project \"id\", \"score\"=\"hr.value\"",
-          "url": "http://ngsi-api:3000/entities?type=HealthRawInformation&id=urn%3Angsi-ld%3AHealthRawInformation%3Apatient2&limit=100&offset=0",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
-        }
-      ],
-      "title": "Heart Rate (bpm)",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "ngsi-api-infinity"
+        "type": "grafana-postgresql-datasource",
+        "uid": "cratedb_grafana"
       },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "continuous-RdYlGr"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "max": 100,
@@ -276,57 +211,101 @@
       },
       "id": 3,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "11.5.2",
       "targets": [
         {
-          "columns": [],
-          "filters": [],
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "cratedb_grafana"
+          },
+          "editorMode": "code",
           "format": "table",
-          "global_query_id": "",
-          "parser": "uql",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  time_index AS \"time\",\n  spo2 AS \"SpO2\"\nFROM doc.ethealthrawinformation\nWHERE $__timeFilter(time_index)\nORDER BY time_index ASC",
           "refId": "A",
-          "root_selector": "",
-          "source": "url",
-          "type": "json",
-          "uql": "parse-json\n| project \"id\", \"score\"=\"spO2.value\"",
-          "url": "http://ngsi-api:3000/entities?type=HealthRawInformation&id=urn%3Angsi-ld%3AHealthRawInformation%3Apatient2&limit=100&offset=0",
-          "url_options": {
-            "data": "",
-            "method": "GET"
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
           }
         }
       ],
       "title": "Blood Oxygenation (spO2)",
-      "type": "stat"
+      "type": "timeseries"
     },
     {
       "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "ngsi-api-infinity"
+        "type": "grafana-postgresql-datasource",
+        "uid": "cratedb_grafana"
       },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-BlYlRd"
+            "mode": "thresholds",
+            "seriesBy": "last"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
-          "max": 20,
+          "max": 220,
           "min": 0,
           "thresholds": {
             "mode": "absolute",
@@ -374,46 +353,193 @@
         "x": 12,
         "y": 8
       },
-      "id": 4,
+      "id": 6,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "11.5.2",
       "targets": [
         {
-          "columns": [],
-          "filters": [],
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "cratedb_grafana"
+          },
+          "editorMode": "code",
           "format": "table",
-          "global_query_id": "",
-          "parser": "uql",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  time_index AS \"time\",\n  hr AS \"Heart Rate\"\nFROM doc.ethealthrawinformation\nWHERE $__timeFilter(time_index)\nORDER BY time_index ASC",
           "refId": "A",
-          "root_selector": "",
-          "source": "url",
-          "type": "json",
-          "uql": "parse-json\n| project \"id\", \"score\"=\"activity.value\"",
-          "url": "http://ngsi-api:3000/entities?type=HealthRawInformation&id=urn%3Angsi-ld%3AHealthRawInformation%3Apatient2&limit=100&offset=0",
-          "url_options": {
-            "data": "",
-            "method": "GET"
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Heart Rate (bpm)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "cratedb_grafana"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "max": 20,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 30
+              },
+              {
+                "color": "green",
+                "value": 50
+              },
+              {
+                "color": "dark-green",
+                "value": 70
+              },
+              {
+                "color": "green",
+                "value": 90
+              },
+              {
+                "color": "yellow",
+                "value": 110
+              },
+              {
+                "color": "orange",
+                "value": 130
+              },
+              {
+                "color": "dark-red",
+                "value": 150
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 6,
+        "y": 16
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "cratedb_grafana"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  time_index AS \"time\",\n  activity AS \"activity\"\nFROM doc.ethealthrawinformation\nWHERE $__timeFilter(time_index)\nORDER BY time_index ASC",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
           }
         }
       ],
       "title": "Activity",
-      "type": "stat"
+      "type": "timeseries"
     }
   ],
   "preload": false,
