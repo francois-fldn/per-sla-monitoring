@@ -14,7 +14,7 @@ def main():
             logger.info("Envoi de données sur le topic sensors/spO2/data")
             ret= client.publish("sensors/activity/data", row[3])
             logger.info("Envoi de données sur le topic sensors/activity/data")
-            time.sleep(0.1)
+            time.sleep(0.5)
 
 if __name__ == "__main__":
     logger = logging.getLogger("data replayer")

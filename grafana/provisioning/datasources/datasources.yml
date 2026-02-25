@@ -5,8 +5,9 @@ datasources:
     type: yesoreyeram-infinity-datasource
     access: proxy
     isDefault: true
+    url: http://ngsi-api:3000
+    uid: "ngsi-api-infinity"
     jsonData:
-      allowedHosts:
-        - "ngsi-api:3000"
-      # optional convenience default; panels can still set full URL
-      url: "http://ngsi-api:3000"
+      base_url: http://ngsi-api:3000
+      datasource_mode: "basic"
+    editable: true

@@ -96,6 +96,15 @@ services:
         - RP_BROKER=redpanda:19092
       restart: on-failure
 
+  edge_cloud_sender:
+      build: ./edge-cloud-sender
+      container_name: edge-cloud-sender
+      depends_on:
+        - redpanda
+      environment:
+        - RP_BROKER=redpanda:19092
+      restart: on-failure
+
   mongo:
     image: mongo:4.4
     container_name: fiware-mongo
@@ -106,7 +115,7 @@ services:
     ports:
       - "27017:27017"
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "mongodb://localhost:27017/admin", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      test: ["CMD", "mongo", "--quiet", "mongodb://localhost:27017/admin", "--eval", "db.runCommand({ ping: 1 }).ok"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -140,7 +149,7 @@ services:
     restart: unless-stopped
     depends_on:
       wait-orion:
-        condition: service_healthy
+        condition: service_started
     ports:
       - "8082:80"
     environment:
@@ -165,17 +174,17 @@ services:
     restart: unless-stopped
     depends_on:
       wait-orion:
-        condition: service_healthy
+        condition: service_started
     working_dir: /app
     volumes:
-      - ./cloud-services/ngsi-api:/app
+      - ./services/ngsi-api:/app
     environment:
       PORT: "3000"
       ORION_LD_BASE_URL: "http://orion-ld:1026"
       OWNER_ATTR: "ownerId"
       TIME_ATTR: "observedAt"
       ORION_TIMEOUT_MS: "10000"
-    command: ["sh", "-c", "npm ci && npm run start"]
+    command: ["sh", "-c", "npm install && npm run start"]
     ports:
       - "3000:3000"
 
@@ -194,7 +203,7 @@ services:
       ]
 
   grafana:
-    image: grafana/grafana:11.3.1
+    image: grafana/grafana:11.5.2
     container_name: per-sla-grafana
     restart: unless-stopped
     depends_on:
@@ -207,10 +216,10 @@ services:
       GF_SECURITY_ADMIN_PASSWORD: "admin"
       GF_USERS_ALLOW_SIGN_UP: "false"
       GF_PATHS_PROVISIONING: /etc/grafana/provisioning
-      GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource"
+      GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource" # Essaie de fixer la version
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./cloud-grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
 
 volumes:
   redpanda-data:

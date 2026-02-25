@@ -3,9 +3,9 @@ apiVersion: 1
 providers:
   - name: per-sla
     orgId: 1
-    folder: per-sla
+    folder: ''
     type: file
     disableDeletion: true
     editable: true
     options:
-      path: /etc/grafana/provisioning/dashboards-json
+      path: /etc/grafana/provisioning/dashboards/definitions

@@ -20,41 +20,43 @@ def main():
   final_json = dict()
   cnt = 0
 
-  def on_message(client, userdata, message):
-    nonlocal agregated_data, final_json, cnt
+  try:
 
-    # aggregation des données
-    data = float(message.payload.decode('utf-8'))
-    metric = message.topic.split('/')[1]
-    logger.info(f"Message recu sur le topic {metric} : {data}")
-    # cur_json[metric] = data
-    
+    def on_message(client, userdata, message):
+      nonlocal agregated_data, final_json, cnt
 
-    # TODO : ajouter partie filtrage ici
-    cleaned_data = cleaner.clean_value(data, metric)
-    agregated_data[metric] = cleaned_data
-    # TODO : ajouter partie filtrage ici
-
-    # annotation des données
-    cnt += 1
-    if cnt == DATA_COUNT:
-      for i in DATA_TYPES: final_json[i]= agregated_data[i]
-      for i in PATIENT_HEALTH_INFO: final_json[i]= health_data[i]
-
-      logger.info(f"Data finale: {final_json}")
-      final_json = json_formatter.convert_json(final_json)
-
-      topic = f"patient.{PATIENT_ID}.raw_data"
+      # aggregation des données
+      data = float(message.payload.decode('utf-8'))
+      metric = message.topic.split('/')[1]
+      logger.info(f"Message recu sur le topic {metric} : {data}")
+      # cur_json[metric] = data
       
-      # print(final_json)
-      producer.produce(topic, final_json, f"")
-      producer.flush()
-      logger.info(f"Donnees envoyees sur le topic {topic}")
-      agregated_data = dict()
-      final_json = dict()
-      cnt = 0
-      time.sleep(0.2)
 
+      # TODO : ajouter partie filtrage ici
+      cleaned_data = cleaner.clean_value(data, metric)
+      agregated_data[metric] = cleaned_data
+      # TODO : ajouter partie filtrage ici
+
+      # annotation des données
+      cnt += 1
+      if cnt == DATA_COUNT:
+        for i in DATA_TYPES: final_json[i]= agregated_data[i]
+        for i in PATIENT_HEALTH_INFO: final_json[i]= health_data[i]
+
+        logger.info(f"Data finale: {final_json}")
+        final_json = json_formatter.convert_json(final_json)
+
+        topic = f"patient.{PATIENT_ID}.raw_data"
+        
+        # print(final_json)
+        producer.produce(topic, final_json, f"")
+        producer.flush()
+        logger.info(f"Donnees envoyees sur le topic {topic}")
+        agregated_data = dict()
+        final_json = dict()
+        cnt = 0
+  except:
+    logger.error("nsm")
 
 
   client = mqtt.Client()
